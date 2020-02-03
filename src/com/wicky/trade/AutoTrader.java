@@ -5,6 +5,8 @@ import java.awt.Robot;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -18,6 +20,8 @@ import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef.HWND;
 import com.sun.jna.platform.win32.WinUser.WNDENUMPROC;
+
+import sun.misc.IOUtils;
 
 public class AutoTrader {
     public static void main(String[] args) throws AppNotFoundException {
@@ -41,9 +45,15 @@ public class AutoTrader {
             e.printStackTrace();
         }
         bringWindowToFront();
+        r.delay(1000);
+        bringWindowToFront();
+        r.delay(2000);
+        bringWindowToFront();
+        r.delay(2000);
         if(!appFound){
             throw new AppNotFoundException();
         }
+        r.delay(5000);
 //        altTabSwitch();
         doTrade();
 //        altTabSwitch();
@@ -79,13 +89,51 @@ public class AutoTrader {
     
     private void doTrade(){
 //        exractBasicInfo();
-        
-        int code = 600104;
-        double price = 26.12;
-        int amount = 100;
-        
-        buy(code, price, amount);
-//        sell(code, price, amount);
+    
+    	// The name of the file to open.
+        String fileName = "C:\\Users\\alexwang\\workspace\\CalcMktCap\\actions";
+
+        // This will reference one line at a time
+        String line = null;
+
+        try {
+            // FileReader reads text files in the default encoding.
+            FileReader fileReader = 
+                new FileReader(fileName);
+
+            // Always wrap FileReader in BufferedReader.
+            BufferedReader bufferedReader = 
+                new BufferedReader(fileReader);
+
+            while((line = bufferedReader.readLine()) != null) {
+                System.out.println(line);
+                String[] sep = line.split("\t");
+                String code = sep[0];
+                double price = Double.parseDouble(sep[1]);
+                int amount = Integer.parseInt(sep[2]);
+                if(amount>0){
+                	buy(code, price, amount);
+                }
+                else{
+                	sell(code, price, -amount);
+                }
+            }   
+
+            // Always close files.
+            bufferedReader.close();         
+        }
+        catch(FileNotFoundException ex) {
+            System.out.println(
+                "Unable to open file '" + 
+                fileName + "'");                
+        }
+        catch(IOException ex) {
+            System.out.println(
+                "Error reading file '" 
+                + fileName + "'");                  
+            // Or we could just do this: 
+            // ex.printStackTrace();
+        }
         
     }
 
@@ -150,39 +198,51 @@ public class AutoTrader {
         return info;
     }
 
-    private void buy(int code, double price, int amount) {
-        pressF3();
+    private void buy(String code, double price, int amount) {
+    	pressF3();
         pressF1();
         input(code);
+        r.delay(300);
         pressEnter();
+        r.delay(300);
         input(price);
+        r.delay(300);
         pressEnter();
+        r.delay(300);
         input(amount);
-//        r.delay(500);
-//        pressB();
-//        r.delay(500);
-//        pressY();
-//        r.delay(500);
-//        pressSpace();
-//        r.delay(1000);
+        r.delay(1000);
+        pressB();
+        r.delay(1000);
+        pressY();
+        r.delay(1000);
+        pressSpace();
+        r.delay(500);
+        pressSpace();
+        r.delay(500);
     }
     
 
-    private void sell(int code, double price, int amount) {
-        pressF3();
+    private void sell(String code, double price, int amount) {
+    	pressF3();
         pressF2();
         input(code);
+        r.delay(300);
         pressEnter();
+        r.delay(300);
         input(price);
+        r.delay(300);
         pressEnter();
+        r.delay(300);
         input(amount);
-        r.delay(500);
+        r.delay(1000);
         pressS();
-        r.delay(500);
+        r.delay(1000);
         pressY();
+        r.delay(1000);
+        pressSpace();
         r.delay(500);
         pressSpace();
-        r.delay(1000);
+        r.delay(500);
     }
     
     private void altTabSwitch() {
